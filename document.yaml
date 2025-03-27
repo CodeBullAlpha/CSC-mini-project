@@ -1,0 +1,8 @@
+input-files:
+    - intro.md
+output-file: output.pdf
+metadata:
+    title: "My Document"
+    author: "NW Ndebele"
+    date: "2025-02-18"
+    toc: true
