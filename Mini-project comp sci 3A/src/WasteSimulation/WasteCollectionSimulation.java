@@ -1,9 +1,4 @@
-package WasteSimulation;
-
 import javax.imageio.ImageIO;
-
-import WGraph.Graph;
-
 import java.awt.Color;
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -88,7 +83,7 @@ public class WasteCollectionSimulation {
     // ==================== MAIN METHOD ====================
     public static void main(String[] args) {
         System.out.println("Waste Sorting Simulation - Graph ADT Version");
-        new WasteCollectionSimulation(LARGE, 1, 2);
+        new WasteCollectionSimulation(LARGE, 2, 2);
     }
 
     // ==================== INITIALIZATION METHODS ====================
@@ -243,7 +238,7 @@ public class WasteCollectionSimulation {
 
     private void startSimulation() {
         isPaused = false;
-        while (!mapFullyExplored) {
+        while (!(mapFullyExplored && allWasteDisposed())) {
             if (!isPaused && !waitingForUser) {
                 updateSimulation();
                 updateDisplayMap();
@@ -257,13 +252,21 @@ public class WasteCollectionSimulation {
             }
             
             mapFullyExplored = isMapFullyExplored();
-            if (mapFullyExplored) {
-                System.out.println("\nMAP FULLY EXPLORED - SIMULATION COMPLETE!");
+            if (mapFullyExplored && allWasteDisposed()) {
+                System.out.println("\nMAP FULLY EXPLORED AND ALL WASTE DISPOSED - SIMULATION COMPLETE!");
                 break;
             }
         }
     }
-
+    private boolean allWasteDisposed() {
+        // Check if all identified waste has been collected
+        for (Waste waste : wastes) {
+            if (waste.identified) {
+                return false;
+            }
+        }
+        return true;
+    }
     private void updateSimulation() {
         for (Robot robot : robots) {
             robot.act();
@@ -271,41 +274,49 @@ public class WasteCollectionSimulation {
     }
 
     private void updateDisplayMap() {
+     
         displayMap = new char[rows][cols];
-        
-        // Initialize display map from graph nodes
         for (Graph.GraphNode<GridCell> node : graph.getNodes()) {
             GridCell cell = node.getData();
             displayMap[cell.row][cell.col] = cell.type;
         }
-
-        // Update waste display status
+        for (Bin bin : bins) {
+            char binChar = switch (bin.type) {
+                case PLASTIC -> PLASTIC_BIN;
+                case PAPER -> PAPER_BIN;
+                case METAL -> METAL_BIN;
+                case GLASS -> GLASS_BIN;
+            };
+            displayMap[bin.row][bin.col] = binChar;//------------//
+        }
         for (Waste waste : wastes) {
-            if (waste.identified) {
-                char wasteChar = switch (waste.type) {
+            char wasteChar = waste.identified ? 
+                switch (waste.type) {
                     case PLASTIC -> PLASTIC_WASTE;
                     case PAPER -> PAPER_WASTE;
                     case METAL -> METAL_WASTE;
                     case GLASS -> GLASS_WASTE;
-                };
-                displayMap[waste.row][waste.col] = wasteChar;
-            } else {
-                displayMap[waste.row][waste.col] = UNIDENTIFIED_WASTE;
-            }
+                } : UNIDENTIFIED_WASTE;
+            displayMap[waste.row][waste.col] = wasteChar;//------------//
+        }
+        for (Robot robot : robots) {
+            char robotChar = robot.carrying != null ? ROBOT_CARRYING : ROBOT_EMPTY;
+            displayMap[robot.row][robot.col] = robotChar; //------------//
         }
 
-        // Mark explored areas
+      
         for (Robot robot : robots) {
             for (int r = 0; r < rows; r++) {
                 for (int c = 0; c < cols; c++) {
-                    if (robot.exploredMap[r][c] && displayMap[r][c] == WALKABLE) {
+                    if (robot.exploredMap[r][c] && 
+                        displayMap[r][c] == WALKABLE) {
                         displayMap[r][c] = EXPLORED_AREA;
                     }
                 }
             }
         }
 
-        // Mark field of view
+        // Mark field of view (only affects walkable/explored areas)
         for (Robot robot : robots) {
             int minRow = Math.max(0, robot.row - fieldOfView);
             int maxRow = Math.min(rows - 1, robot.row + fieldOfView);
@@ -314,17 +325,15 @@ public class WasteCollectionSimulation {
 
             for (int r = minRow; r <= maxRow; r++) {
                 for (int c = minCol; c <= maxCol; c++) {
-                    if (robot.hasLineOfSight(robot.row, robot.col, r, c)) {
-                        Graph.GraphNode<GridCell> node = findNode(r, c);
-                        if (node != null && node.getData().type == WALKABLE) {
-                            displayMap[r][c] = FIELD_OF_VIEW;
-                        }
+                    if (robot.hasLineOfSight(robot.row, robot.col, r, c) &&
+                        (displayMap[r][c] == WALKABLE || displayMap[r][c] == EXPLORED_AREA)) {
+                        displayMap[r][c] = FIELD_OF_VIEW;
                     }
                 }
             }
         }
     }
-
+   
     private void printMap() {
         System.out.print("\033[H\033[2J");
         System.out.flush();
@@ -337,17 +346,7 @@ public class WasteCollectionSimulation {
 
         for (int r = 0; r < rows; r++) {
             for (int c = 0; c < cols; c++) {
-                boolean hasRobot = false;
-                char robotChar = ROBOT_EMPTY;
-                for (Robot robot : robots) {
-                    if (robot.row == r && robot.col == c) {
-                        hasRobot = true;
-                        robotChar = robot.carrying != null ? ROBOT_CARRYING : ROBOT_EMPTY;
-                        break;
-                    }
-                }
-
-                System.out.print(hasRobot ? robotChar : displayMap[r][c]);
+                System.out.print(displayMap[r][c]);
                 System.out.print(" ");
             }
             System.out.println();
@@ -812,6 +811,13 @@ public class WasteCollectionSimulation {
             } else {
                 System.out.println("INCORRECT DISPOSAL! Wrong bin type!");
             }
+            
+            // Show remaining waste count
+            int remaining = 0;
+            for (Waste w : wastes) {
+                if (w.identified) remaining++;
+            }
+            System.out.println("Remaining identified waste: " + remaining);
             
             System.out.println("Press Enter to continue...");
             scanner.nextLine();
