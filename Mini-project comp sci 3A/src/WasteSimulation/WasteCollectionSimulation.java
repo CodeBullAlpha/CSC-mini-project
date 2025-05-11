@@ -5,11 +5,22 @@ import java.io.File;
 import java.io.IOException;
 import java.util.*;
 
+import javafx.application.Application;
+import javafx.application.Platform;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
+import javafx.scene.control.Button;
+import javafx.stage.Stage;
+
+import java.util.concurrent.TimeUnit;
+
+
 /**
  * Waste Collection Simulation Program using Graph ADT
  * Manages the simulation and display
  */
-public class WasteCollectionSimulation {
+public class WasteCollectionSimulation extends Application {
     // Constants
     static final char WALL = '#';
     static final char WALKABLE = '.';
@@ -26,6 +37,10 @@ public class WasteCollectionSimulation {
     static final char GLASS_BIN = 'G';
     static final char EXPLORED_AREA = '.';
     static final char FIELD_OF_VIEW = ' ';
+
+    public static final int SMALL = 20;
+    public static final int MEDIUM = 25;
+    public static final int LARGE = 29;
     
     static final String WASTE_IMAGE_PATH = "waste_images/";
     static final String BIN_IMAGE_PATH = "bin_images/";
@@ -38,12 +53,17 @@ public class WasteCollectionSimulation {
     public List<Bin> bins = new ArrayList<>();
     int fieldOfView;
     int rows;
-	int cols;
+    int cols;
     private boolean mapFullyExplored = false;
     private boolean isPaused = true;
     boolean waitingForUser = false;
     private Scanner scanner = new Scanner(System.in);
 
+
+    private Display display;
+    private Stage displayStage;
+    public WasteCollectionSimulation() {}
+        
     public WasteCollectionSimulation(int size, int numRobots, int fieldOfView) {
         this.rows = size;
         this.cols = size;
@@ -52,11 +72,42 @@ public class WasteCollectionSimulation {
         generateGraph();
         spawnRobots(numRobots);
 
-        System.out.println("Simulation Initialized - Map Size: " + rows + "x" + cols);
-        System.out.println("Press Enter to start...");
-        scanner.nextLine();
 
-        startSimulation();
+	isPaused = false;
+        
+        // Initialize JavaFX components on the FX thread
+        Platform.runLater(() -> {
+            displayStage = new Stage();
+            display = new Display(displayMap);
+            displayStage.setScene(display.getCurrentScene());
+            displayStage.show();
+        });
+        
+        // Start simulation in a separate thread
+        new Thread(() -> {
+		while (!mapFullyExplored) {
+		    if (!isPaused) {
+			updateSimulation();
+			updateDisplayMap();
+                    
+			// Update UI on FX thread
+			Platform.runLater(() -> {
+				display.updateMaize(displayMap);
+				displayStage.setScene(display.getCurrentScene());
+				displayStage.sizeToScene();
+				printMap();
+			    });
+                    
+			try {
+			    TimeUnit.SECONDS.sleep(1);
+			} catch (InterruptedException e) {
+			    e.printStackTrace();
+			}
+		    }
+		    mapFullyExplored = isMapFullyExplored();
+		}
+        }).start();
+
     }
 
     private void generateGraph() {
@@ -185,28 +236,6 @@ public class WasteCollectionSimulation {
         }
     }
 
-    private void startSimulation() {
-        isPaused = false;
-        while (!(mapFullyExplored && allWasteDisposed())) {
-            if (!isPaused && !waitingForUser) {
-                updateSimulation();
-                updateDisplayMap();
-                printMap();
-
-                try {
-                    Thread.sleep(500);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            }
-
-            mapFullyExplored = isMapFullyExplored();
-            if (mapFullyExplored && allWasteDisposed()) {
-                System.out.println("\nMAP FULLY EXPLORED AND ALL WASTE DISPOSED - SIMULATION COMPLETE!");
-                break;
-            }
-        }
-    }
 
     private boolean allWasteDisposed() {
         for (Waste waste : wastes) {
@@ -414,6 +443,36 @@ public class WasteCollectionSimulation {
     }
 
     public static void main(String[] args) {
-        new WasteCollectionSimulation(30, 1, 3);
+        launch(args);
     }
+
+
+    @Override
+    public void start(Stage primaryStage) throws Exception {
+	FXMLLoader loader = new FXMLLoader(WasteCollectionSimulation.class.getResource("fxml/greeter.fxml"));
+        Parent root = loader.load();
+
+        Scene scene = new Scene(root, 550, 800);
+        
+        Button startSimulationBtn = (Button) root.getChildrenUnmodifiable().getLast();
+        
+        if(startSimulationBtn != null ) {
+        
+	    startSimulationBtn.setOnAction(e -> {
+		    primaryStage.close();
+		    WasteCollectionSimulation simulation = new WasteCollectionSimulation(
+											 MEDIUM,
+											 10,
+											 3
+											 );
+		});
+        }
+        
+                
+        primaryStage.setTitle("Waste Collection Simulation");
+        primaryStage.setScene(scene);
+        primaryStage.show();
+    }
+    
+    
 }
