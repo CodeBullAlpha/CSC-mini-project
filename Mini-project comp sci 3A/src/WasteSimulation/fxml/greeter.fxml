@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.String?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.text.Font?>
+<?import javafx.scene.text.Text?>
+
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" styleClass="backgroundColor" stylesheets="@css/style.css" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1">
+   <children>
+      <Text fill="#2c0d0d" layoutX="153.0" layoutY="76.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Welcome." textAlignment="CENTER" wrappingWidth="294.04541015625">
+         <font>
+            <Font name="Cantarell Light" size="56.0" />
+         </font>
+      </Text>
+      <Text fontSmoothingType="LCD" layoutX="133.0" layoutY="139.0" lineSpacing="2.0" strokeWidth="0.0" text="This project introduces an autonomous robotic system designed to address South Africa's growing waste management challenges. Leveraging Graph Convolutional Networks (GCNs), our solution combines advanced machine learning with robotic mobility to create intelligent waste disposal infrastructure. The robots efficiently navigate urban environments and complex terrains, accurately classifying recyclable materials including paper, glass, and metal before depositing them in appropriate bins. By deploying this AI-driven approach, we aim to reduce landfill pollution, improve recycling rates, and create cleaner communities across South Africa's cities and townships. The system represents a scalable, sustainable solution that could transform waste management while creating new opportunities in green technology." textAlignment="JUSTIFY" wrappingWidth="334.64111328125">
+         <font>
+            <Font name="Cantarell Light" size="19.0" />
+         </font>
+      </Text>
+      <Button id="startSimulation" layoutX="240.0" layoutY="725" mnemonicParsing="false" prefHeight="42.0" prefWidth="107.0" style="-fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.6), 10, 0, 5, 5);" text="Continue">
+         <font>
+            <Font name="Cantarell Light" size="16.0" />
+         </font>
+         <styleClass>
+            <String fx:value="backgroundColor" />
+            <String fx:value="button" />
+         </styleClass>
+      </Button>
+   </children>
+</AnchorPane>
