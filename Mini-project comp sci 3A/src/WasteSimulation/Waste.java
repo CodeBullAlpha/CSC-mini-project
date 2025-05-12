@@ -1,3 +1,5 @@
+package WasteSimulation;
+
 import java.io.File;
 
 class Waste {

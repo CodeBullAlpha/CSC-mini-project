@@ -1,7 +1,11 @@
+package WasteSimulation;
+
 import java.awt.Color;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.util.*;
+import GCN.GCNInferenceHelper;
+import WGraph.Graph;
 
 public class Robot {
     public int row, col;
@@ -22,6 +26,9 @@ public class Robot {
         this.col = c;
         this.fieldOfView = simulation.fieldOfView;
         this.exploredMap = new boolean[simulation.rows][simulation.cols];
+        GCNInferenceHelper.loadModel("saved_sessions/TRAIN_epoch3248_20250511_200748Acccuracy%0.0.dat");
+        // Initialize with all bins from simulation
+        this.knownBins = new ArrayList<>(simulation.bins);
         exploreCurrentPosition();
     }
 
@@ -105,7 +112,8 @@ public class Robot {
             }
 
             if (row == targetBin.row && col == targetBin.col) {
-                simulation.showDisposalDialog(carrying, targetBin);
+                // Use the new disposal popup method
+                simulation.showDisposalPopup(carrying, targetBin);
                 carrying = null;
                 targetBin = null;
             }
@@ -116,21 +124,21 @@ public class Robot {
             }
         }
     }
-
     private void findAndCollectWaste() {
         // Try to pick up waste at current position
-        Waste waste = simulation.findWasteAt(row, col);
-        if (waste != null) {
-            carrying = waste;
-            simulation.removeWaste(waste);
-            knownWastes.remove(new Point(row, col));
-
-            WasteType classifiedType = classifyWaste(waste.imageFile);
-            carrying.type = classifiedType;
-
-            simulation.showClassificationDialog(waste);
-            return;
-        }
+    	 Waste waste = simulation.findWasteAt(row, col);
+    	    if (waste != null) {
+    	        carrying = waste;
+    	        simulation.removeWaste(waste);
+    	        knownWastes.remove(new Point(row, col));
+    	        
+    	        WasteType classifiedType = classifyWaste(waste.imageFile); //********************//
+    	        carrying.type = classifiedType;
+    	        
+    	        // Use the new popup method
+    	        simulation.showWasteObtainedPopup(waste);
+    	        return;
+    	    }
 
         // Move toward nearest known waste
         if (!knownWastes.isEmpty()) {
@@ -158,9 +166,11 @@ public class Robot {
             }
         }
     }
+    
+    //_________________________________________________________________________________________
 
     private WasteType classifyWaste(File wasteImage) {
-        try {
+        /*try {
         	
         
             BufferedImage image = javax.imageio.ImageIO.read(wasteImage);
@@ -175,9 +185,15 @@ public class Robot {
             return WasteType.PLASTIC;
         } catch (Exception e) {
             return WasteType.PLASTIC;
-        }
+        }*/
+    	return GCNInferenceHelper.Validate1Image(wasteImage);
     }
-
+    public boolean isInFOV(int r, int c) {
+        return Math.abs(row - r) <= fieldOfView && 
+               Math.abs(col - c) <= fieldOfView &&
+               hasLineOfSight(row, col, r, c);
+    }
+   //_________________________________________________________________________________________________
     private Point findNearestWaste() {
         Point nearest = null;
         double minDistance = Double.MAX_VALUE;
@@ -339,30 +355,18 @@ public class Robot {
 
     private Bin findNearestMatchingBin(WasteType type) {
         Bin nearestBin = null;
-        double minDistance = Double.MAX_VALUE;
-
-        for (Bin bin : knownBins) {
+        int minPathLength = Integer.MAX_VALUE;
+        
+        for (Bin bin : simulation.bins) {  // Check all bins in simulation
             if (bin.type == type) {
-                double distance = Math.sqrt(Math.pow(bin.row - row, 2) + Math.pow(bin.col - col, 2));
-                if (distance < minDistance) {
-                    minDistance = distance;
+                List<Point> path = findPath(new Point(row, col), new Point(bin.row, bin.col));
+                if (path != null && path.size() < minPathLength) {
+                    minPathLength = path.size();
                     nearestBin = bin;
                 }
             }
         }
-
-        if (nearestBin == null) {
-            for (Bin bin : simulation.bins) {
-                if (bin.type == type) {
-                    double distance = Math.sqrt(Math.pow(bin.row - row, 2) + Math.pow(bin.col - col, 2));
-                    if (distance < minDistance) {
-                        minDistance = distance;
-                        nearestBin = bin;
-                    }
-                }
-            }
-        }
-
+        
         return nearestBin;
     }
 }

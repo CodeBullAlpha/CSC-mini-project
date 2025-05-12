@@ -4,8 +4,8 @@ import java.util.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import WGraph.*;
 
+import WGraph.GCNGraph;
 
 public class GCNTrainer {
     private GCNModel model;
@@ -111,9 +111,13 @@ public class GCNTrainer {
     }
 
     public void train(List<GCNGraph> graphs, List<GCNGraph> validationGraphs, int epochs, int batchSize) {
+    	//keep track of the validation accuracy 
+    	double validationAccuracy=0.0;
+    	
         for (int epoch = currentEpoch; epoch < epochs; epoch++) {
+        	
             if (stopRequested) {
-                GCNMemory.saveSession(model, epoch, learningRate, this, "TRAIN");
+                GCNMemory.saveSession(model, epoch, learningRate, this, "TRAIN",validationAccuracy);
                 GCNMemory.saveGraphList(graphs, "GRAPH");
                 System.out.println("Training stopped at epoch " + epoch);
                 return;
@@ -246,7 +250,7 @@ public class GCNTrainer {
 
             // Compute validation loss and accuracy
             double avgValidationLoss = validationLoss / validationGraphs.size();
-            double validationAccuracy = (double)correctPredictions / totalPredictions*100.0;
+             validationAccuracy = (double)correctPredictions / totalPredictions*100.0;
 
             // Print epoch stats
             System.out.println("Epoch " + epoch + " Avg Loss: " + (epochLoss / graphs.size())
@@ -387,47 +391,6 @@ public class GCNTrainer {
         }
         return result;
     }
-
-
-	/*private double[][] softmaxDerivative(double[][] Z) {
-	    // Assuming Z is after linear output but before softmax
-	    double[][] softmax = GraphUtils.softmax(Z);
-	    double[][] derivative = new double[softmax.length][softmax[0].length];
-
-	    for (int i = 0; i < softmax.length; i++) {
-	        for (int j = 0; j < softmax[0].length; j++) {
-	            derivative[i][j] = softmax[i][j] * (1.0 - softmax[i][j]);
-	        }
-	    }
-	    return derivative;
-	}
-	
-    Helper: compute Frobenius norm of a matrix
-    private double matrixNorm(double[][] matrix) {
-        double sum = 0.0;
-        for (double[] row : matrix)
-            for (double v : row)
-                sum += v * v;
-        return Math.sqrt(sum);
-    }
-
-    // Helper: find minimum element in a matrix
-    private double matrixMin(double[][] matrix) {
-        double min = Double.POSITIVE_INFINITY;
-        for (double[] row : matrix)
-            for (double v : row)
-                if (v < min) min = v;
-        return min;
-    }
-
-    // Helper: find maximum element in a matrix
-    private double matrixMax(double[][] matrix) {
-        double max = Double.NEGATIVE_INFINITY;
-        for (double[] row : matrix)
-            for (double v : row)
-                if (v > max) max = v;
-        return max;
-    }*/
 	
 }
 

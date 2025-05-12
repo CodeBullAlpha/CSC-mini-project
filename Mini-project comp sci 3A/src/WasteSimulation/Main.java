@@ -1,11 +1,21 @@
+package WasteSimulation;
+
+import java.util.Scanner;
+
+import javax.swing.JFrame;
+import javax.swing.SwingUtilities;
 
 public class Main {
 	public static void main(String[] args) {
-		final int SMALL = 20;
-		final int MEDIUM = 25;
-		final int LARGE = 29;
-		System.out.println("Waste Sorting Simulation - Graph ADT Version");
-		new WasteCollectionSimulation(LARGE, 2, 2);
+
+		SwingUtilities.invokeLater(() -> {
+			JFrame setupFrame = new JFrame("Simulation Setup");
+			setupFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
+			// Show welcome screen first
+			WasteCollectionSimulation simulation = new WasteCollectionSimulation();
+			simulation.showWelcomeScreen();
+		});
 	}
 
 }

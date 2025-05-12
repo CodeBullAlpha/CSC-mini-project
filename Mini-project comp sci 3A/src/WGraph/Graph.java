@@ -1,4 +1,5 @@
 package WGraph;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -11,9 +12,13 @@ import java.util.List;
  * @param <T> The type of data stored in the graph nodes, must implement Comparable
  */
 @SuppressWarnings("unchecked")
-public class Graph<T extends Comparable<T>> {
+public class Graph<T extends Comparable<T>> implements Serializable{
 
-    private List<GraphNode<T>> nodes = new ArrayList<GraphNode<T>>();
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	private List<GraphNode<T>> nodes = new ArrayList<GraphNode<T>>();
     private List<GraphLink<T>> links = new ArrayList<GraphLink<T>>();
 
     // Graph type constants
@@ -142,6 +147,19 @@ public class Graph<T extends Comparable<T>> {
             code *= e.hashCode();
         }
         return 31 * code;
+    }
+    
+    /**
+     * Returns a snapshot of the data stored in all graph nodes.
+     * This provides a thread-safe copy of the node data list.
+     * @return List of node data objects of type T
+     */
+    public List<T> getNodesDataSnapshot() {
+        List<T> snapshot = new ArrayList<>(nodes.size());
+        for (GraphNode<T> node : nodes) {
+            snapshot.add(node.getData());
+        }
+        return snapshot;
     }
 
     @Override
@@ -356,6 +374,8 @@ public class Graph<T extends Comparable<T>> {
 
             return 0;
         }
+        
+        
 
         @Override
         public String toString() {
@@ -614,6 +634,8 @@ public class Graph<T extends Comparable<T>> {
             }
             return result;
         }
+        
+
 
         @Override
         public boolean equals(Object obj) {

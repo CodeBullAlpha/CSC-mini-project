@@ -28,6 +28,10 @@ public class PriorityQueueHeap<K,V> extends AbstractPriorityQueueBase<K, V>
 		heap = new ArrayList<>();
 	}
 	
+	public ArrayList<Entry<K, V>> getHeap() {
+		return heap;
+	}
+
 	/**
 	 * Constructor with user defined comparator passed as parameter
 	 * @param comp

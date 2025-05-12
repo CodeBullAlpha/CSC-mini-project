@@ -1,6 +1,8 @@
+package WasteSimulation;
+
 import java.util.Objects;
 
-//import WasteCollectionSimulation.Point;
+
 
 class Point {
         int x, y;

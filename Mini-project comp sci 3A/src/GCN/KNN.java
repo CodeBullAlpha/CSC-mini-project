@@ -1,7 +1,7 @@
 package GCN;
 
-import java.util.PriorityQueue;
-
+import DataStructures.PriorityQueueHeap;
+import DataStructures.Entry;
 import WGraph.GCNGraph;
 
 public class KNN {
@@ -11,39 +11,44 @@ public class KNN {
      */
     public static void makeCombined16NNConnections(GCNGraph graph, double[][] features) {
         int n = features.length;
+
         for (int i = 0; i < n; i++) {
-            // (distanceScaled, index) pairs, max-heap by distance
-            PriorityQueue<int[]> nearest = new PriorityQueue<>(16, (a, b) -> Integer.compare(b[0], a[0]));
+            // Custom max-heap: higher key = lower priority (i.e., further neighbors)
+            PriorityQueueHeap<Integer, Integer> nearest = new PriorityQueueHeap<>((a, b) -> Integer.compare(b, a));
 
             for (int j = 0; j < n; j++) {
                 if (i == j) continue;
-                // spatial on dims 6,7
+
+                // Spatial distance (dims 6 and 7)
                 double spatial = Math.hypot(features[i][6] - features[j][6], features[i][7] - features[j][7]);
-                // color euclidean on first 6 dims
+
+                // Color distance (dims 0 to 5)
                 double colorDist = 0;
                 for (int d = 0; d < 6; d++) {
                     double diff = features[i][d] - features[j][d];
                     colorDist += diff * diff;
                 }
                 colorDist = Math.sqrt(colorDist);
-                double combined = spatial + colorDist;
 
+                // Combine distances and scale
+                double combined = spatial + colorDist;
                 int scaled = (int) (combined * 1e6);
+
                 if (nearest.size() < 16) {
-                    nearest.offer(new int[]{ scaled, j });
-                } else if (scaled < nearest.peek()[0]) {
-                    nearest.poll();
-                    nearest.offer(new int[]{ scaled, j });
+                    nearest.insert(scaled, j);
+                } else {
+                    Entry<Integer, Integer> max = nearest.min(); // Since we use reversed comparator, this is the max
+                    if (scaled < max.getKey()) {
+                        nearest.removeMin(); // Remove the farthest neighbor
+                        nearest.insert(scaled, j); // Add new closer neighbor
+                    }
                 }
             }
 
-            // Add unweighted edges (weight=1) to the 16 nearest neighbors
-            for (int[] entry : nearest) {
-                graph.addEdge(i, entry[1], 1);
+            // Add unweighted edges to the graph
+            for (Entry<Integer, Integer> entry : nearest.getHeap()) {
+                graph.addEdge(i, entry.getValue(), 1);
             }
         }
     }
 }
-
-
-
