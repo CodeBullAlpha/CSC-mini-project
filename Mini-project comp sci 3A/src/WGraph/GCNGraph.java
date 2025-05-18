@@ -66,7 +66,7 @@ public class GCNGraph implements Serializable {
     private final int numClasses;
 
     public GCNGraph(int numClasses) {
-        this.graph = new Graph<>(Graph.getUndirected());
+        this.graph = new Graph<>('U');
         this.numClasses = numClasses;
     }
 
@@ -93,7 +93,7 @@ public class GCNGraph implements Serializable {
         Graph.GraphNode<NodeData> nj = nodes.get(j);
         Graph.GraphLink<NodeData> link = new Graph.GraphLink<>(weight, ni, nj);
         ni.addLink(link);
-        if (graph.getGraphType() == Graph.getUndirected()) {
+        if (graph.getGraphType() == 'U') {
             Graph.GraphLink<NodeData> reciprocal = new Graph.GraphLink<>(weight, nj, ni);
             nj.addLink(reciprocal);
             graph.getLinks().add(reciprocal);
