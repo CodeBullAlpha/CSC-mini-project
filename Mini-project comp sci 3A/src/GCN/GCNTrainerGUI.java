@@ -6,6 +6,10 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -153,6 +157,7 @@ public class GCNTrainerGUI extends JFrame {
 
             // Resume session with the model file
             boolean resumed = GCNMemory.resumeSession(selectedModelFile.getAbsolutePath(), model, trainer);
+
             if (resumed) {
                 // Now, choose the graph file
                 JFileChooser graphChooser = new JFileChooser();
@@ -375,7 +380,11 @@ public class GCNTrainerGUI extends JFrame {
 
 
 
-
+    /**
+     * Tests the model on all images in the "test-data" folder.
+     * Logs predictions, compares to ground truth, and moves correctly classified images
+     * into class-specific folders inside "waste images".
+     */
     public void testModel() {
         File testFolder = new File(selectedFolder, "test-data");
         if (!testFolder.exists() || !testFolder.isDirectory()) {
@@ -394,14 +403,13 @@ public class GCNTrainerGUI extends JFrame {
 
         log("Testing on " + files.length + " images from: " + testFolder.getAbsolutePath());
 
-
         int numClasses = classNames.length;
-
         int correct = 0, total = 0;
 
         for (File file : files) {
             GCNGraph miniGraph = null;
             try {
+                // Extract graph from file
                 miniGraph = ImageLoader.extractGraphUsingSLICF2(file, numClasses);
             } catch (IOException e) {
                 e.printStackTrace();
@@ -409,22 +417,31 @@ public class GCNTrainerGUI extends JFrame {
             }
             if (miniGraph == null) continue;
 
+            // Run forward pass on GCN model
             double[][] A = miniGraph.getNormalizedAdjMatrix();
             double[][] X = miniGraph.getFeatureMatrix();
-
-            // forward gives you [numClasses] directly:
             double[] avgScores = model.forward(A, X);
 
-
-
+            // Determine prediction
             int predictedClass = argMax(avgScores);
+            
             String predicted = classNames[predictedClass];
 
+            // Determine actual class based on image number
             int imgNum = extractImageNumber(file.getName());
             String actual = determineActualClass(imgNum);
 
+            // If prediction is correct, move image to correct folder
             if (predicted.equals(actual)) {
                 correct++;
+                try {
+                    Path destinationDir = Paths.get("waste images", predicted);
+                    Files.createDirectories(destinationDir);
+                    Path destination = destinationDir.resolve(file.getName());
+                    Files.copy(file.toPath(), destination, StandardCopyOption.REPLACE_EXISTING);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             } else {
                 System.out.println("Wrong prediction: " + file.getName() +
                                    " predicted=" + predicted +
@@ -444,6 +461,8 @@ public class GCNTrainerGUI extends JFrame {
         double accuracy = total > 0 ? (double) correct / total * 100.0 : 0.0;
         log(String.format("Overall Test Accuracy: %.2f%%", accuracy));
     }
+    
+    
 
     private int argMax(double[] array) {
         int maxIdx = 0;
@@ -474,33 +493,11 @@ public class GCNTrainerGUI extends JFrame {
     }
     
 
-
-
-    
-    class Triple<A, B, C> {
-        private final A first;
-        private final B second;
-        private final C third;
-        public Triple(A first, B second, C third) {
-            this.first = first;
-            this.second = second;
-            this.third = third;
-        }
-        public A getFirst() { return first; }
-        public B getSecond() { return second; }
-        public C getThird() { return third; }
-    }
-
     private void log(String message) {
         SwingUtilities.invokeLater(() -> logArea.append(message + "\n"));
     }
 
-    public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> {
-            GCNTrainerGUI gui = new GCNTrainerGUI();
-            gui.setVisible(true);
-        });
-    }
+
 }
 
 

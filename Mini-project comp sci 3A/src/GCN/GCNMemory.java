@@ -31,10 +31,11 @@ public class GCNMemory {
     		int currentEpoch,
     		double learningRate,
     		GCNTrainer trainer,
-    		String sessionName) {
+    		String sessionName,double Accuracy) {
     	try {
     		String timestamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
-    		String fileName = SAVE_FOLDER + "/" + sessionName + "_epoch" + currentEpoch + "_" + timestamp;
+    		String fileName = SAVE_FOLDER + "/" + sessionName + "_epoch" + currentEpoch + "_" + timestamp
+    				+"Acccuracy%"+Accuracy;
     		new File(SAVE_FOLDER).mkdirs();
 
     		try (ObjectOutputStream out = new ObjectOutputStream(
