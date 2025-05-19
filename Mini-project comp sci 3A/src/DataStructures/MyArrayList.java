@@ -70,6 +70,20 @@ public class MyArrayList <E> implements Iterable<E>{
     }
 
     /**
+     * Checks if an item is contained in the array list
+     * @param item item to search for
+     * @return a boolean on whether or not the arraylist contains the supplied element;
+     */
+    public boolean contains(E item) {
+	for(int i = 0; i < size; i++) {
+	    if(arrList[i].equals(item))
+		return true;
+	}
+
+	return false;
+    }
+    
+    /**
      * Clears all the elements of the arraylist
      */
     @SuppressWarnings("unchecked")
@@ -87,7 +101,36 @@ public class MyArrayList <E> implements Iterable<E>{
 	expandArray(size);
 	arrList[size++] = element;
     }
+
+    /**
+     * Removes an item at the specified index
+     * @param index index of the item to remove.
+     */
+
+    public void remove(int index) {
+	if(index <= 0 || index >= size)
+	    return;
+
+	for(int i = index + 1; i < size; i++)
+	    arrList[i-1] = arrList[i];
+
+	--capacity;
+    }
+
+    /**
+     * Removes the specified item (if contained) from the list;
+     * @param item item to remove.
+     */
+    public void remove(E item) {
+	int index = -1;
 	
+	for(int i = 0; i < size; i++)
+	    if(item.equals(arrList[i]))
+		index = i;
+
+	remove(index);
+    }
+     
     /**
      * checks if the array is full. If it is then it will incrent the size of the 
      * array
