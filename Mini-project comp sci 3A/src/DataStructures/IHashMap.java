@@ -12,6 +12,11 @@ public interface IHashMap<K, V>{
     public boolean isEmpty();
 
     /**
+     * @return a boolean of whether or not the hashmap has a given key
+     */
+    public boolean containsKey(K key);
+
+    /**
      * @param key supplied key
      * @return value associated with the supplied key
      */

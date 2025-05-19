@@ -49,6 +49,19 @@ public class HashMap<K, V> implements IHashMap<K,V> {
     }
 
     @Override
+    public boolean containsKey(K key) {
+	int index = hash(key);
+
+	if(bucketArray[index] == null)
+	    return false;
+	
+	if(bucketArray[index].isEmpty())
+	    return false;
+
+	return true;
+    }
+
+    @Override
     public V get(K key){
 	int index = hash(key);
 

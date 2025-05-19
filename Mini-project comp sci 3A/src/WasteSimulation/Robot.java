@@ -8,6 +8,9 @@ import java.util.*;
 import GCN.GCNInferenceHelper;
 import WGraph.Graph;
 
+import DataStructures.HashMap;
+
+
 public class Robot {
 	public int row, col;
 	public Waste carrying = null;
@@ -253,7 +256,7 @@ public class Robot {
 	private Point findNearestUnexplored() {
 		Queue<Point> queue = new LinkedList<>();
 		boolean[][] visited = new boolean[simulation.rows][simulation.cols];
-		Map<Point, Point> parent = new HashMap<>();
+		HashMap<Point, Point> parent = new HashMap<>();
 
 		queue.add(new Point(row, col));
 		visited[row][col] = true;
@@ -288,7 +291,7 @@ public class Robot {
 
 	private List<Point> findPath(Point start, Point goal) {
 		Queue<Point> queue = new LinkedList<>();
-		Map<Point, Point> parent = new HashMap<>();
+		HashMap<Point, Point> parent = new HashMap<>();
 
 		queue.add(start);
 		parent.put(start, null);

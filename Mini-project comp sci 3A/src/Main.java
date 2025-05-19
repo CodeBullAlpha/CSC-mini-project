@@ -1,9 +1,9 @@
-package WasteSimulation;
-
 import java.util.Scanner;
 
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
+
+import WasteSimulation.WasteCollectionSimulation;
 
 public class Main {
 	public static void main(String[] args) {
