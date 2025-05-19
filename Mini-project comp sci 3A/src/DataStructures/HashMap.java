@@ -1,9 +1,8 @@
 package DataStructures;
 
 import java.util.Random;
-import java.util.ArrayList;
 
-public class HashMap<K, V> {
+public class HashMap<K, V> implements IHashMap<K,V> {
 
     /*
      * Current number of items in the HashMap.
@@ -21,11 +20,10 @@ public class HashMap<K, V> {
     private int prime;
     private int scale, shift;
 
-
     /*
      * The underlying bucket array used to store items.
     */    
-    private SLinkedList<V>[] bucketArray;
+    private DLinkedList<V>[] bucketArray;
 
     public HashMap() {
 	capacity = 100000;
@@ -37,46 +35,35 @@ public class HashMap<K, V> {
 	scale = rand.nextInt(prime  - 1) + 1;
 	shift = rand.nextInt(prime);
 
-	bucketArray = (SLinkedList<V>[])new SLinkedList[capacity];
+	bucketArray = (DLinkedList<V>[])new DLinkedList[capacity];
     }
 
-    /*
-     * @return current number of items in the HashMap.
-     */
+    @Override
     public int size() {
 	return size;
     }
 
-    /*
-     * @return a boolean of whether or not the hashmap has items.
-     */
+    @Override
     public boolean isEmpty() {
 	return size == 0;
     }
 
-    /* @param key supplied key
-     * @return value associated with the supplied key
-     */
+    @Override
     public V get(K key){
 	int index = hash(key);
 
 	if(bucketArray[index] == null || bucketArray[index].isEmpty())
 	    return null;
 
-	return bucketArray[index].first();
+	return bucketArray[index].first().getElement();
     }
-
-    /*
-     * Associates a key with a value and returns the value.
-     * @param key supplied key.
-     * @param value supplied value to associate with key.
-     * @return value associated with key 
-     */
+    
+    @Override
     public V put(K key, V value) {
 	int index = hash(key);
 	
 	if(bucketArray[index] == null) {
-	    bucketArray[index] = new SLinkedList<V>();
+	    bucketArray[index] = new DLinkedList<V>();
 	}
 	
 	bucketArray[index].addFirst(value);
@@ -84,12 +71,8 @@ public class HashMap<K, V> {
 
 	return value;
     }
-
-    /*
-     * Removes the first value associated with supplied key and returns it.
-     * @param key
-     * @return old value associated with supplied key.
-     */
+    
+    @Override
     public V remove(K key) {
 	int index = hash(key);
 	
@@ -100,7 +83,11 @@ public class HashMap<K, V> {
 
 	return bucketArray[index].removeFirst();
     }
-    
+
+    /**
+     * Computes the hash of the supplied key and compresses it to be in the range [0, capacity-1]
+     * @return compressed hash of the supplied key
+     */
     private int hash(K key){
 	return (int)((Math.abs(key.hashCode()*scale + shift) % prime) % capacity);
     }
