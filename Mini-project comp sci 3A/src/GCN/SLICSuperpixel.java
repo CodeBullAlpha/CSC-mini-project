@@ -6,8 +6,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import DataStructures.CustomArrayList;
-
 public class SLICSuperpixel {
 	 @SuppressWarnings("unchecked")
 	public static int[][] generateSuperpixels(BufferedImage img, int numSuperpixels, double compactness) {
@@ -20,7 +18,7 @@ public class SLICSuperpixel {
 	            for (int x = 0; x < width; x++)
 	                lab[x][y] = rgbToLab(new Color(img.getRGB(x, y)));
 
-	        CustomArrayList<ClusterCenter> centers = new CustomArrayList<>();
+	        List<ClusterCenter> centers = new ArrayList<>();
 	        for (int y = S / 2; y < height; y += S) {
 	            for (int x = S / 2; x < width; x += S) {
 	                double[] color = lab[x][y];

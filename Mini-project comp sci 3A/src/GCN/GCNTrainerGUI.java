@@ -16,8 +16,6 @@ import java.util.List;
 import java.util.Random;
 import WGraph.*;
 
-import DataStructures.CustomArrayList;
-
 public class GCNTrainerGUI extends JFrame {
     /**
 	 * 
@@ -38,13 +36,13 @@ public class GCNTrainerGUI extends JFrame {
     private GCNTrainer trainer;
     private GCNModel model;  // keep a reference for test-time prediction
    
-    CustomArrayList<BufferedImage> originalImages = new CustomArrayList<>();
+    List<BufferedImage> originalImages = new ArrayList<>();
     // experimentation variables 
 	private static final int batchsize=25;
     private int totalEpochs =100000000;
     private static  double LearningRate=0.0001;
-    private CustomArrayList<GCNGraph> graphsList= new CustomArrayList<GCNGraph>();
-    CustomArrayList<Integer> originalLabels = new CustomArrayList<>();
+    private List<GCNGraph> graphsList= new ArrayList<GCNGraph>();
+    List<Integer> originalLabels = new ArrayList<>();
     public static final String testFolder="./test-data";
     private static final String[] classNames= {"metal", "paper", "plastic", "brown-glass"};
 
@@ -169,7 +167,7 @@ public class GCNTrainerGUI extends JFrame {
                     
                     // Load the graph from the chosen file
                     graphsList=GCNMemory.loadGraphList(selectedGraphFile.getAbsolutePath());
-                    CustomArrayList<GCNGraph> validationGraphs = loadValidationData();
+                    List<GCNGraph> validationGraphs = loadValidationData();
                     trainer.setStopRequested(false);
                     // Start the training process
                     
@@ -210,8 +208,8 @@ public class GCNTrainerGUI extends JFrame {
     }
 
     public void startTraining() throws IOException {
-        CustomArrayList<GCNGraph> trainingGraphs = loadTrainingData();
-        CustomArrayList<GCNGraph> validationGraphs = loadValidationData();
+        List<GCNGraph> trainingGraphs = loadTrainingData();
+        List<GCNGraph> validationGraphs = loadValidationData();
 
         if (trainingGraphs.isEmpty()) {
             log("No valid training data!");
@@ -227,8 +225,8 @@ public class GCNTrainerGUI extends JFrame {
         }).start();
     }
     
-    private CustomArrayList<GCNGraph> loadTrainingData() throws IOException {
-        CustomArrayList<GCNGraph> graphsList = new CustomArrayList<>();
+    private List<GCNGraph> loadTrainingData() throws IOException {
+        List<GCNGraph> graphsList = new ArrayList<>();
         final int maxPerClass = 50;
 
         for (int cls = 0; cls < classNames.length; cls++) {
@@ -267,8 +265,8 @@ public class GCNTrainerGUI extends JFrame {
         return graphsList;
     }
 
-    private CustomArrayList<GCNGraph> loadValidationData() throws IOException {
-        CustomArrayList<GCNGraph> validationGraphs = new CustomArrayList<>();
+    private List<GCNGraph> loadValidationData() throws IOException {
+        List<GCNGraph> validationGraphs = new ArrayList<>();
         
         
         // Assuming all images are in one folder
