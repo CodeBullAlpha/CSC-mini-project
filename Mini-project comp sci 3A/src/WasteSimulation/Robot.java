@@ -20,7 +20,7 @@ import DataStructures.CustomArrayList;
 import DataStructures.LinkedListQueue;
 
 import DataStructures.HashMap;
-import DataStructures.CustomArrayList;
+
 
 public class Robot {
 	public int row, col;
@@ -427,17 +427,9 @@ public class Robot {
 			return;
 		}
 
-		List<Bin> relevantBins = new ArrayList<Bin>();
-		
-		Iterator<Bin> binIter = relevantBins.iterator();
+		List<Bin> relevantBins = simulation.bins.stream().filter(bin -> bin.type == carrying.type).toList();
 
-		while(binIter.hasNext()) {
-		    Bin current = binIter.next();
-		    if(current.type == carrying.type)
-			relevantBins.add(current);
-		}
-		
-		
+
 		if (relevantBins.isEmpty()) {
 			nearestBin = null;
 			farthestBin = null;
