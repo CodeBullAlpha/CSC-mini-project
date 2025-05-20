@@ -34,6 +34,18 @@ public class CustomArrayList <E> implements Iterable<E>{
     }
 
     /**
+     * Parameterized constructor
+     * @param initialList
+     */
+    public CustomArrayList(CustomArrayList<E> initialList) {
+	this(initialList.size());
+
+	DataStructures.Iterator<E> elements = initialList.iterator();
+	while(elements.hasNext())
+	    add(elements.next());
+    }
+
+    /**
      * @return the current number of elements in the arraylist
      */
     public int size() {
