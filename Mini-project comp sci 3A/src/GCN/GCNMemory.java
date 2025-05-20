@@ -9,11 +9,13 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
+
 import java.util.Date;
 import java.util.List;
 import WGraph.GCNGraph;
 
+
+import DataStructures.CustomArrayList;
 
 public class GCNMemory {
 
@@ -127,7 +129,7 @@ public class GCNMemory {
 
     // NEW FUNCTIONS BELOW
 
-    public static void saveGraphList(List<GCNGraph> graphList, String sessionName) {
+    public static void saveGraphList(CustomArrayList<GCNGraph> graphList, String sessionName) {
         try {
             String timestamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
             String fileName = SAVE_FOLDER + "/" + sessionName + "_graphs_" + timestamp + ".dat";
@@ -144,7 +146,7 @@ public class GCNMemory {
     }
 
     @SuppressWarnings("unchecked")
-    public static List<GCNGraph> loadGraphList(String graphFilePath) {
+    public static CustomArrayList<GCNGraph> loadGraphList(String graphFilePath) {
         File file = new File(graphFilePath);
         if (!file.exists()) {
             System.out.println("Graph file does not exist: " + graphFilePath);
@@ -157,13 +159,13 @@ public class GCNMemory {
             // Check if it's a single GCNGraph or a list
             if (object instanceof GCNGraph) {
                 // If it's a single GCNGraph, wrap it in a list
-                List<GCNGraph> graphList = new ArrayList<>();
+                CustomArrayList<GCNGraph> graphList = new CustomArrayList<>();
                 graphList.add((GCNGraph) object);
                 System.out.println("Single graph loaded from: " + graphFilePath);
                 return graphList;
-            } else if (object instanceof List<?>) {
+            } else if (object instanceof CustomArrayList<?>) {
                 // If it's already a List<GCNGraph>, cast it properly
-                List<GCNGraph> graphList = (List<GCNGraph>) object;
+                CustomArrayList<GCNGraph> graphList = (CustomArrayList<GCNGraph>) object;
                 System.out.println("Graphs loaded from: " + graphFilePath);
                 return graphList;
             } else {
