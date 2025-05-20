@@ -9,7 +9,8 @@ import java.util.List;
 import DataStructures.CustomArrayList;
 
 public class SLICSuperpixel {
-	 public static int[][] generateSuperpixels(BufferedImage img, int numSuperpixels, double compactness) {
+	 @SuppressWarnings("unchecked")
+	public static int[][] generateSuperpixels(BufferedImage img, int numSuperpixels, double compactness) {
 	        int width = img.getWidth();
 	        int height = img.getHeight();
 	        int S = (int) Math.sqrt((width * height) / (double) numSuperpixels);
@@ -76,7 +77,7 @@ public class SLICSuperpixel {
 	                    newCenters[i].y /= counts[i];
 	                }
 	            }
-	            centers = Arrays.asList(newCenters);
+	            centers = (CustomArrayList<ClusterCenter>) Arrays.asList(newCenters);
 	        }
 	        return labels;
 	    }

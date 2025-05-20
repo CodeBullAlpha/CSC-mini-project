@@ -1,19 +1,21 @@
 package WasteSimulation;
 
-import java.awt.Color;
-import java.awt.image.BufferedImage;
+//import java.awt.Color;
+//import java.awt.image.BufferedImage;
 import java.io.File;
 
 import GCN.GCNInferenceHelper;
 import WGraph.Graph;
 
-import java.util.Queue;
-import java.util.Collections;
-import java.util.LinkedList;
+//import java.util.Queue;
+//import java.util.Collections;
+//import java.util.LinkedList;
 
+import DataStructures.Queues;
 import DataStructures.HashMap;
 import DataStructures.CustomArrayList;
 import DataStructures.Iterator;
+import DataStructures.LinkedListQueue;
 
 public class Robot {
 	public int row, col;
@@ -265,16 +267,16 @@ public class Robot {
 	}
 
 	private Point findNearestUnexplored() {
-		Queue<Point> queue = new LinkedList<>();
+		Queues<Point> queue = new LinkedListQueue<>();
 		boolean[][] visited = new boolean[simulation.rows][simulation.cols];
 		HashMap<Point, Point> parent = new HashMap<>();
 
-		queue.add(new Point(row, col));
+		queue.enqueue(new Point(row, col));
 		visited[row][col] = true;
 		parent.put(new Point(row, col), null);
 
 		while (!queue.isEmpty()) {
-			Point current = queue.poll();
+			Point current = queue.dequeue();
 
 			if (!exploredMap[current.x][current.y]) {
 				while (parent.get(current) != null && !parent.get(current).equals(new Point(row, col))) {
@@ -291,7 +293,7 @@ public class Robot {
 				GridCell neighborCell = link.getToNode().getData();
 				Point neighbor = new Point(neighborCell.row, neighborCell.col);
 				if (!visited[neighbor.x][neighbor.y]) {
-					queue.add(neighbor);
+					queue.enqueue(neighbor);
 					visited[neighbor.x][neighbor.y] = true;
 					parent.put(neighbor, current);
 				}
@@ -301,14 +303,14 @@ public class Robot {
 	}
 
 	private CustomArrayList<Point> findPath(Point start, Point goal) {
-		Queue<Point> queue = new LinkedList<>();
+		Queues<Point> queue = new LinkedListQueue<>();
 		HashMap<Point, Point> parent = new HashMap<>();
 
-		queue.add(start);
+		queue.enqueue(start);
 		parent.put(start, null);
 
 		while (!queue.isEmpty()) {
-			Point current = queue.poll();
+			Point current = queue.dequeue();
 			if (current.equals(goal))
 				break;
 
@@ -322,7 +324,7 @@ public class Robot {
 
 				if (!parent.containsKey(neighbor)) {
 					parent.put(neighbor, current);
-					queue.add(neighbor);
+					queue.enqueue(neighbor);
 				}
 			}
 		}

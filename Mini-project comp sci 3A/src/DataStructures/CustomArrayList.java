@@ -4,7 +4,7 @@
 package DataStructures;
 
 import java.util.Random;
-import java.util.Iterator;
+//import java.util.Iterator;
 
 /**
  * 
@@ -136,8 +136,9 @@ public class CustomArrayList <E> implements Iterable<E>{
      */
     public void shuffle(){
 	Random rand = new Random();
-	for(int i = 0; i < size; i++) {
-	    int newIndex = rand.nextInt(0, size);
+	int newIndex = 0;
+	for(int i = size - 1; i >= 1; i--) {
+	    newIndex = rand.nextInt(0, size);
 	    E tmp = arrList[i];
 	    arrList[i] = arrList[newIndex];
 	    arrList[newIndex] = tmp;
@@ -206,9 +207,8 @@ public class CustomArrayList <E> implements Iterable<E>{
 		
     }//end of Iterator
 	
-    @SuppressWarnings("unchecked")
     @Override
-    public DataStructures.Iterator<E> iterator() {
-	return (DataStructures.Iterator<E>) new MyArrayListIterator();
+    public Iterator<E> iterator() {
+	return  (Iterator<E>) new MyArrayListIterator();
     }
 }

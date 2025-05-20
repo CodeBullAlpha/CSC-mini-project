@@ -8,10 +8,10 @@ package DataStructures;
  */
 public class LinkedListQueue <E> implements Queues<E>, Cloneable{
 	
-	private SLinkedList<E> listQue;
+	private DLinkedList<E> listQue;
 	
 	public LinkedListQueue() {
-		listQue = new SLinkedList<E>();
+		listQue = new DLinkedList<E>();
 	}
 	
 	@Override
@@ -53,10 +53,11 @@ public class LinkedListQueue <E> implements Queues<E>, Cloneable{
 		return listQue.removeFirst();
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public E first() {
 		// TODO Auto-generated method stub
-		return listQue.first();
+		return (E) listQue.first();
 	}
 
 }
