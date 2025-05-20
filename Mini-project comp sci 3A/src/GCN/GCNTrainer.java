@@ -1,11 +1,11 @@
 package GCN;
 
+import java.util.*;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 import WGraph.GCNGraph;
-import DataStructures.CustomArrayList;
-import DataStructures.Iterator;
 
 public class GCNTrainer {
     private GCNModel model;
@@ -103,14 +103,14 @@ public class GCNTrainer {
         return result;
     }
 
-    private CustomArrayList<CustomArrayList<GCNGraph>> createMiniBatches(CustomArrayList<GCNGraph> graphs, int batchSize) {
-        CustomArrayList<CustomArrayList<GCNGraph>> miniBatches = new CustomArrayList<>();
+    private List<List<GCNGraph>> createMiniBatches(List<GCNGraph> graphs, int batchSize) {
+        List<List<GCNGraph>> miniBatches = new ArrayList<>();
         for (int i = 0; i < graphs.size(); i += batchSize)
             miniBatches.add(graphs.subList(i, Math.min(graphs.size(), i + batchSize)));
         return miniBatches;
     }
 
-    public void train(CustomArrayList<GCNGraph> graphs, CustomArrayList<GCNGraph> validationGraphs, int epochs, int batchSize) {
+    public void train(List<GCNGraph> graphs, List<GCNGraph> validationGraphs, int epochs, int batchSize) {
     	//keep track of the validation accuracy 
     	double validationAccuracy=0.0;
     	
@@ -124,25 +124,20 @@ public class GCNTrainer {
             }
 
             // Shuffle training data
-	    //            Collections.shuffle(graphs);
-	    graphs.shuffle(); //might cause problems later on
-            CustomArrayList<CustomArrayList<GCNGraph>> miniBatches = createMiniBatches(graphs, batchSize);
+            Collections.shuffle(graphs);
+            List<List<GCNGraph>> miniBatches = createMiniBatches(graphs, batchSize);
             double epochLoss = 0.0;
 
             // Training phase
-	    Iterator<CustomArrayList<GCNGraph>> batchIter = miniBatches.iterator();
-	    while(batchIter.hasNext()){
-		CustomArrayList<GCNGraph> batch  = batchIter.next();
+            for (List<GCNGraph> batch : miniBatches) {
                 // Accumulated gradients
                 double[][] accGradW1 = new double[model.gcn1.weights.length][model.gcn1.weights[0].length];
                 double[][] accGradW2 = new double[model.gcn2.weights.length][model.gcn2.weights[0].length];
                 double[][] accGradWDense = new double[model.dense.weights.length][model.dense.weights[0].length];
                 double batchLoss = 0.0;
 
-		Iterator<GCNGraph> graphIter = batch.iterator();
-		while(graphIter.hasNext()){
-		    GCNGraph graph = graphIter.next() ;
-		    double[][] A =  graph.getNormalizedAdjMatrix();
+                for (GCNGraph graph : batch) {
+                    double[][] A =  graph.getNormalizedAdjMatrix();
                     double[][] X = graph.getFeatureMatrix();
                     double[][] label = graph.getGraphLevelLabel();
 
@@ -230,9 +225,7 @@ public class GCNTrainer {
             int correctPredictions = 0;
             int totalPredictions = 0;
 
-	    Iterator<GCNGraph> graphIter = validationGraphs.iterator();
-	    while(graphIter.hasNext()) {
-		GCNGraph graph = graphIter.next();
+            for (GCNGraph graph : validationGraphs) {
                 double[][] A = graph.getNormalizedAdjMatrix();
                 double[][] X = graph.getFeatureMatrix();
                 double[][] label = graph.getGraphLevelLabel();
