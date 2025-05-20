@@ -75,7 +75,7 @@ public class SLICSuperpixel {
 	                    newCenters[i].y /= counts[i];
 	                }
 	            }
-	            centers = (CustomArrayList<ClusterCenter>) Arrays.asList(newCenters);
+	            centers = (ArrayList<ClusterCenter>) Arrays.asList(newCenters);
 	        }
 	        return labels;
 	    }
