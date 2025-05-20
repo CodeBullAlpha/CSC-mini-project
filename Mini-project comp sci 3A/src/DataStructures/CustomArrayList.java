@@ -3,6 +3,7 @@
  */
 package DataStructures;
 
+import java.util.Random;
 import java.util.Iterator;
 
 /**
@@ -112,6 +113,35 @@ public class CustomArrayList <E> implements Iterable<E>{
     public void add(E element) {
 	expandArray(size);
 	arrList[size++] = element;
+    }
+
+
+    /**
+     * Returns a sub list starting and ending at the supplied indices
+     * @param startIndex where the sub list should start
+     * @param endIndex where the sub list should end
+     */
+    public CustomArrayList<E> subList(int startIndex, int endIndex) {
+	CustomArrayList<E> subList = new CustomArrayList<>();
+
+	for(int i = startIndex; i < endIndex; i++) {
+	    subList.add(get(i));
+	}
+
+	return subList;
+    }
+
+    /**
+     * Shuffles the items in the array list
+     */
+    public void shuffle(){
+	Random rand = new Random();
+	for(int i = 0; i < size; i++) {
+	    int newIndex = rand.nextInt(0, size);
+	    E tmp = arrList[i];
+	    arrList[i] = arrList[newIndex];
+	    arrList[newIndex] = tmp;
+	}
     }
 
     /**

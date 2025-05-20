@@ -3,26 +3,30 @@ package WasteSimulation;
 import java.awt.Color;
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.util.*;
 
 import GCN.GCNInferenceHelper;
 import WGraph.Graph;
 
+import java.util.Queue;
+import java.util.Collections;
+import java.util.LinkedList;
+
 import DataStructures.HashMap;
 import DataStructures.CustomArrayList;
+import DataStructures.Iterator;
 
 public class Robot {
 	public int row, col;
 	public Waste carrying = null;
 	public Bin targetBin = null;
-	public List<Point> path = new ArrayList<>();
-	public List<Point> knownWastes = new ArrayList<>();
-	public List<Bin> knownBins = new ArrayList<>();
+	public CustomArrayList<Point> path = new CustomArrayList<>();
+	public CustomArrayList<Point> knownWastes = new CustomArrayList<>();
+	public CustomArrayList<Bin> knownBins = new CustomArrayList<>();
 	public boolean[][] exploredMap;
 	public Point explorationTarget;
 
-	private List<Point> pathToNearestBin = new ArrayList<>();
-	private List<Point> pathToFarthestBin = new ArrayList<>();
+	private CustomArrayList<Point> pathToNearestBin = new CustomArrayList<>();
+	private CustomArrayList<Point> pathToFarthestBin = new CustomArrayList<>();
 	private float pathAlpha = 1.0f;
 
 	private Bin nearestBin;
@@ -40,7 +44,7 @@ public class Robot {
 		this.exploredMap = new boolean[simulation.rows][simulation.cols];
 		//instantiate the brain of the Robot which is the GCN
 		GCNInferenceHelper.loadModel("saved_sessions/TRAIN_epoch3248_20250511_200748Acccuracy%0.0.dat");
-		this.knownBins = new ArrayList<>(simulation.bins);
+		this.knownBins = new CustomArrayList<>(simulation.bins);
 		exploreCurrentPosition();
 	}
 
@@ -92,15 +96,20 @@ public class Robot {
 	}
 
 	private void identifyWastes() {
-		for (Waste waste : simulation.wastes) {
-			if (hasLineOfSight(row, col, waste.row, waste.col)) {
-				waste.identified = true;
-				Point wasteLoc = new Point(waste.row, waste.col);
-				if (!knownWastes.contains(wasteLoc)) {
-					knownWastes.add(wasteLoc);
-				}
-			}
+	    Iterator<Waste> wasteIter = simulation.wastes.iterator();
+	    while(wasteIter.hasNext()){
+		Waste waste = wasteIter.next();
+
+		if (hasLineOfSight(row, col, waste.row, waste.col)) {
+		    waste.identified = true;
+		    Point wasteLoc = new Point(waste.row, waste.col);
+
+		    if (!knownWastes.contains(wasteLoc)) {
+			knownWastes.add(wasteLoc);
+		    }
+		    
 		}
+	    }
 	}
 
 	private void handleMovement() {
@@ -201,11 +210,13 @@ public class Robot {
 			Point wasteLoc = iterator.next();
 			boolean wasteExists = false;
 
-			for (Waste w : simulation.wastes) {
-				if (w.row == wasteLoc.x && w.col == wasteLoc.y) {
-					wasteExists = true;
-					break;
-				}
+			Iterator<Waste> wasteIter = simulation.wastes.iterator();
+			while(wasteIter.hasNext()){
+			    Waste w = wasteIter.next();
+			    if (w.row == wasteLoc.x && w.col == wasteLoc.y) {
+				wasteExists = true;
+				break;
+			    }
 			}
 
 			if (!wasteExists) {
@@ -223,9 +234,9 @@ public class Robot {
 		return nearest;
 	}
 
-	public List<Point> getVisiblePathToNearestBin() {
+	public CustomArrayList<Point> getVisiblePathToNearestBin() {
 		if (pathToNearestBin.isEmpty()) {
-			return Collections.emptyList();
+		    return new CustomArrayList<>();
 		}
 
 		int currentIndex = 0;
@@ -238,9 +249,9 @@ public class Robot {
 		return pathToNearestBin.subList(currentIndex, pathToNearestBin.size());
 	}
 
-	public List<Point> getVisiblePathToFarthestBin() {
+	public CustomArrayList<Point> getVisiblePathToFarthestBin() {
 		if (pathToFarthestBin.isEmpty()) {
-			return Collections.emptyList();
+		    return new CustomArrayList<>();
 		}
 
 		int currentIndex = 0;
@@ -289,7 +300,7 @@ public class Robot {
 		return null;
 	}
 
-	private List<Point> findPath(Point start, Point goal) {
+	private CustomArrayList<Point> findPath(Point start, Point goal) {
 		Queue<Point> queue = new LinkedList<>();
 		HashMap<Point, Point> parent = new HashMap<>();
 
@@ -316,7 +327,7 @@ public class Robot {
 			}
 		}
 
-		List<Point> path = new ArrayList<>();
+		CustomArrayList<Point> path = new CustomArrayList<>();
 		Point current = goal;
 		while (current != null && !current.equals(start)) {
 			path.add(0, current);
@@ -343,10 +354,19 @@ public class Robot {
 		if (currentNode == null)
 			return;
 
-		List<Graph.GraphLink<GridCell>> links = new ArrayList<>(currentNode.getLinks());
-		Collections.shuffle(links);
+		CustomArrayList<Graph.GraphLink<GridCell>> links = new CustomArrayList<>();
 
-		for (Graph.GraphLink<GridCell> link : links) {
+		for(int i = 0; i < currentNode.getLinks().size(); i++) {
+		    links.add(currentNode.getLinks().get(i));
+		}
+		
+		//Collections.shuffle(links); //might cause a problem later on
+
+		links.shuffle();
+		
+		Iterator<Graph.GraphLink<GridCell>> linkIter = links.iterator();
+		while(linkIter.hasNext()){
+		    Graph.GraphLink<GridCell> link = linkIter.next();
 			GridCell neighbor = link.getToNode().getData();
 			if (neighbor.type != WasteCollectionSimulation.WALL) {
 				row = neighbor.row;
@@ -389,15 +409,17 @@ public class Robot {
 	private Bin findNearestMatchingBin(WasteType type) {
 		Bin nearestBin = null;
 		int minPathLength = Integer.MAX_VALUE;
+		Iterator<Bin> binIter = simulation.bins.iterator();
+		while(binIter.hasNext()){
+		    Bin bin = binIter.next();
 
-		for (Bin bin : simulation.bins) {
-			if (bin.type == type) {
-				List<Point> path = findPath(new Point(row, col), new Point(bin.row, bin.col));
-				if (path != null && path.size() < minPathLength) {
-					minPathLength = path.size();
-					nearestBin = bin;
-				}
+		    if (bin.type == type) {
+			CustomArrayList<Point> path = findPath(new Point(row, col), new Point(bin.row, bin.col));
+			if (path != null && path.size() < minPathLength) {
+			    minPathLength = path.size();
+			    nearestBin = bin;
 			}
+		    }
 		}
 
 		findRelevantBins();
@@ -415,11 +437,11 @@ public class Robot {
 			return;
 		}
 
-		List<Bin> relevantBins = new ArrayList<Bin>();
+		CustomArrayList<Bin> relevantBins = new CustomArrayList<Bin>();
 		
 		Iterator<Bin> binIter = relevantBins.iterator();
 
-		while(binInter.hasNext()) {
+		while(binIter.hasNext()) {
 		    Bin current = binIter.next();
 		    if(current.type == carrying.type)
 			relevantBins.add(current);
@@ -441,20 +463,22 @@ public class Robot {
 		int minDist = pathToNearestBin.size();
 		int maxDist = minDist;
 
-		for (Bin bin : relevantBins) {
-			List<Point> path = findPath(new Point(row, col), new Point(bin.row, bin.col));
-			if (path != null) {
-				if (path.size() < minDist) {
-					minDist = path.size();
-					nearestBin = bin;
-					pathToNearestBin = path;
-				}
-				if (path.size() > maxDist) {
-					maxDist = path.size();
-					farthestBin = bin;
-					pathToFarthestBin = path;
-				}
+		binIter = relevantBins.iterator(); //might cause a problem later on
+		while(binIter.hasNext()){
+		    Bin bin = binIter.next();
+		    CustomArrayList<Point> path = findPath(new Point(row, col), new Point(bin.row, bin.col));
+		    if (path != null) {
+			if (path.size() < minDist) {
+			    minDist = path.size();
+			    nearestBin = bin;
+			    pathToNearestBin = path;
 			}
+			if (path.size() > maxDist) {
+			    maxDist = path.size();
+			    farthestBin = bin;
+			    pathToFarthestBin = path;
+			}
+		    }
 		}
 
 		showingBinOutlines = true;
@@ -478,11 +502,11 @@ public class Robot {
 		}
 	}
 
-	public List<Point> getPathToNearestBin() {
+	public CustomArrayList<Point> getPathToNearestBin() {
 		return pathToNearestBin;
 	}
 
-	public List<Point> getPathToFarthestBin() {
+	public CustomArrayList<Point> getPathToFarthestBin() {
 		return pathToFarthestBin;
 	}
 

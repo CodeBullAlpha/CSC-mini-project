@@ -10,7 +10,11 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import java.util.*;
+
+import java.util.Random;
+
+import DataStructures.CustomArrayList;
+import DataStructures.Iterator;
 
 public class WasteCollectionSimulation {
 
@@ -47,9 +51,9 @@ public class WasteCollectionSimulation {
 
 	private Graph<GridCell> graph;
 	private char[][] displayMap;
-	public java.util.List<Robot> robots = new ArrayList<>();
-	public java.util.List<Waste> wastes = new ArrayList<>();
-	public java.util.List<Bin> bins = new ArrayList<>();
+	public CustomArrayList<Robot> robots = new CustomArrayList<>();
+	public CustomArrayList<Waste> wastes = new CustomArrayList<>();
+	public CustomArrayList<Bin> bins = new CustomArrayList<>();
 	int fieldOfView;
 	int rows;
 	int cols;
@@ -263,18 +267,20 @@ public class WasteCollectionSimulation {
 	}
 
 	private boolean allWasteDisposed() {
-		for (Waste waste : wastes) {
-			if (waste.identified) {
-				return false;
-			}
-		}
-		return true;
+	    Iterator<Waste> wasteIter = wastes.iterator();
+
+	    while(wasteIter.hasNext()) {
+		if(wasteIter.next().identified)
+		    return false;
+	    }
+
+	    return true;
 	}
 
 	private void updateSimulation() {
-		for (Robot robot : robots) {
-			robot.act();
-		}
+	    Iterator<Robot> robotIter = robots.iterator();
+	    while(robotIter.hasNext())
+		robotIter.next().act();
 	}
 
 	private void updateDisplayMap() {
@@ -284,7 +290,9 @@ public class WasteCollectionSimulation {
 			displayMap[cell.row][cell.col] = cell.type;
 		}
 
-		for (Bin bin : bins) {
+		Iterator<Bin> binIter = bins.iterator();
+		while(binIter.hasNext()) {
+		    Bin bin = binIter.next();
 			char binChar = switch (bin.type) {
 			case PLASTIC -> PLASTIC_BIN;
 			case PAPER -> PAPER_BIN;
@@ -294,45 +302,55 @@ public class WasteCollectionSimulation {
 			displayMap[bin.row][bin.col] = binChar;
 		}
 
-		for (Waste waste : wastes) {
-			char wasteChar = waste.identified ? switch (waste.type) {
-			case PLASTIC -> PLASTIC_WASTE;
-			case PAPER -> PAPER_WASTE;
-			case METAL -> METAL_WASTE;
-			case GLASS -> GLASS_WASTE;
-			} : UNIDENTIFIED_WASTE;
-			displayMap[waste.row][waste.col] = wasteChar;
+		Iterator<Waste> wasteIter = wastes.iterator();
+		while(wasteIter.hasNext()) {
+		    Waste waste = wasteIter.next();
+		    char wasteChar = waste.identified ? switch (waste.type) {
+		    case PLASTIC -> PLASTIC_WASTE;
+		    case PAPER -> PAPER_WASTE;
+		    case METAL -> METAL_WASTE;
+		    case GLASS -> GLASS_WASTE;
+		    } : UNIDENTIFIED_WASTE;
+		    displayMap[waste.row][waste.col] = wasteChar;
 		}
 
-		for (Robot robot : robots) {
-			char robotChar = robot.carrying != null ? ROBOT_CARRYING : ROBOT_EMPTY;
-			displayMap[robot.row][robot.col] = robotChar;
+		Iterator<Robot> robotIter = robots.iterator();
+		while(robotIter.hasNext()){
+		    Robot robot  = robotIter.next();
+		    char robotChar = robot.carrying != null ? ROBOT_CARRYING : ROBOT_EMPTY;
+		    displayMap[robot.row][robot.col] = robotChar;
 		}
 
-		for (Robot robot : robots) {
-			for (int r = 0; r < rows; r++) {
-				for (int c = 0; c < cols; c++) {
-					if (robot.exploredMap[r][c] && displayMap[r][c] == WALKABLE) {
-						displayMap[r][c] = EXPLORED_AREA;
-					}
-				}
+		robotIter = robots.iterator();
+		while(robotIter.hasNext()){
+		    Robot robot = robotIter.next();
+		    for (int r = 0; r < rows; r++) {
+			for (int c = 0; c < cols; c++) {
+			    if (robot.exploredMap[r][c] && displayMap[r][c] == WALKABLE) {
+				displayMap[r][c] = EXPLORED_AREA;
+			    }
 			}
+		    }
 		}
 
-		for (Robot robot : robots) {
-			int minRow = Math.max(0, robot.row - fieldOfView);
-			int maxRow = Math.min(rows - 1, robot.row + fieldOfView);
-			int minCol = Math.max(0, robot.col - fieldOfView);
-			int maxCol = Math.min(cols - 1, robot.col + fieldOfView);
+		robotIter = robots.iterator();
+		
+		while(robotIter.hasNext()){
+		    Robot robot = robotIter.next();
+		
+		    int minRow = Math.max(0, robot.row - fieldOfView);
+		    int maxRow = Math.min(rows - 1, robot.row + fieldOfView);
+		    int minCol = Math.max(0, robot.col - fieldOfView);
+		    int maxCol = Math.min(cols - 1, robot.col + fieldOfView);
 
-			for (int r = minRow; r <= maxRow; r++) {
-				for (int c = minCol; c <= maxCol; c++) {
-					if (robot.hasLineOfSight(robot.row, robot.col, r, c)
-							&& (displayMap[r][c] == WALKABLE || displayMap[r][c] == EXPLORED_AREA)) {
-						displayMap[r][c] = FIELD_OF_VIEW;
-					}
-				}
+		    for (int r = minRow; r <= maxRow; r++) {
+			for (int c = minCol; c <= maxCol; c++) {
+			    if (robot.hasLineOfSight(robot.row, robot.col, r, c)
+				&& (displayMap[r][c] == WALKABLE || displayMap[r][c] == EXPLORED_AREA)) {
+				displayMap[r][c] = FIELD_OF_VIEW;
+			    }
 			}
+		    }
 		}
 	}
 
@@ -340,13 +358,18 @@ public class WasteCollectionSimulation {
 		for (Graph.GraphNode<GridCell> node : graph.getNodes()) {
 			GridCell cell = node.getData();
 			if (cell.type != WALL) {
-				boolean exploredByAny = false;
-				for (Robot robot : robots) {
-					if (robot.exploredMap[cell.row][cell.col]) {
-						exploredByAny = true;
-						break;
-					}
-				}
+			    boolean exploredByAny = false;
+
+			    Iterator<Robot> robotIter = robots.iterator();
+
+			    while(robotIter.hasNext()){
+				Robot robot = robotIter.next();
+
+				    if (robot.exploredMap[cell.row][cell.col]) {
+					exploredByAny = true;
+					break;
+				    }
+			    }
 				if (!exploredByAny)
 					return false;
 			}
@@ -355,21 +378,29 @@ public class WasteCollectionSimulation {
 	}
 
 	public Bin findBinAt(int r, int c) {
-		for (Bin bin : bins) {
-			if (bin.row == r && bin.col == c) {
-				return bin;
-			}
+	    Iterator<Bin> binIter = bins.iterator();
+
+	    while(binIter.hasNext()){
+		Bin bin = binIter.next();
+		if (bin.row == r && bin.col == c) {
+		    return bin;
 		}
-		return null;
+	    }
+	    
+	    return null;
 	}
 
 	public Waste findWasteAt(int r, int c) {
-		for (Waste waste : wastes) {
-			if (waste.row == r && waste.col == c) {
-				return waste;
-			}
+	    Iterator<Waste> wasteIter = wastes.iterator();
+
+	    while(wasteIter.hasNext()) {
+		Waste waste = wasteIter.next();
+		if (waste.row == r && waste.col == c) {
+		    return waste;
 		}
-		return null;
+	    }
+	    
+	    return null;
 	}
 
 	public void removeWaste(Waste waste) {
@@ -708,11 +739,13 @@ public class WasteCollectionSimulation {
 						g2d.fillRect(x, y, CELL_SIZE, CELL_SIZE);
 					} else {
 						boolean isExplored = false;
-						for (Robot robot : robots) {
-							if (robot.exploredMap[r][c]) {
-								isExplored = true;
-								break;
-							}
+						Iterator<Robot> robotIter = robots.iterator();
+						while(robotIter.hasNext()){
+						    Robot robot = robotIter.next();
+						    if (robot.exploredMap[r][c]) {
+							isExplored = true;
+							break;
+						    }
 						}
 
 						if (!isExplored) {
@@ -720,7 +753,9 @@ public class WasteCollectionSimulation {
 							g.fillRect(x, y, CELL_SIZE, CELL_SIZE);
 						} else {
 							boolean inFOV = false;
-							for (Robot robot : robots) {
+							robotIter = simulation.robots.iterator(); //might cause a problem later on
+							while(robotIter.hasNext()){
+							    Robot robot = robotIter.next();
 								if (robot.isInFOV(r, c)) {
 									inFOV = true;
 									break;
@@ -808,7 +843,9 @@ public class WasteCollectionSimulation {
 				}
 			}
 
-			for (Robot robot : simulation.robots) {
+			Iterator<Robot> robotIter = simulation.robots.iterator();
+			while(robotIter.hasNext()){
+			    Robot robot = robotIter.next();
 				if (robot.isShowingBinOutlines() && robot.getPathAlpha() > 0) {
 					float alpha = robot.getPathAlpha();
 
@@ -841,7 +878,9 @@ public class WasteCollectionSimulation {
 		}
 
 		private void drawBinOutlines(Graphics2D g2d) {
-			for (Robot robot : simulation.robots) {
+		    Iterator<Robot> robotIter = simulation.robots.iterator();
+		    while(robotIter.hasNext()){
+			Robot robot = robotIter.next();
 				if (robot.isShowingBinOutlines()) {
 
 					Bin nearest = robot.getNearestBin();
@@ -858,7 +897,9 @@ public class WasteCollectionSimulation {
 		}
 
 		private Robot getRobotAt(int r, int c) {
-			for (Robot robot : robots) {
+		    Iterator<Robot> robotIter = robots.iterator();
+		    while(robotIter.hasNext()){
+			Robot robot = robotIter.next();
 				if (robot.row == r && robot.col == c) {
 					return robot;
 				}
@@ -866,19 +907,22 @@ public class WasteCollectionSimulation {
 			return null;
 		}
 
-		private void drawPath(Graphics2D g2d, java.util.List<Point> path, Color color) {
+		private void drawPath(Graphics2D g2d, CustomArrayList<Point> path, Color color) {
 			g2d.setColor(color);
 			g2d.setStroke(new BasicStroke(PATH_THICKNESS));
 
 			Point prev = null;
-			for (Point p : path) {
-				int centerX = p.y * CELL_SIZE + CELL_SIZE / 2;
-				int centerY = p.x * CELL_SIZE + CELL_SIZE / 2;
+			Iterator<Point> pointIter = path.iterator();
+			while(pointIter.hasNext()){
+			    Point p = pointIter.next();
+			    
+			    int centerX = p.y * CELL_SIZE + CELL_SIZE / 2;
+			    int centerY = p.x * CELL_SIZE + CELL_SIZE / 2;
 
-				if (prev != null) {
-					g2d.drawLine(prev.x, prev.y, centerX, centerY);
-				}
-				prev = new Point(centerX, centerY);
+			    if (prev != null) {
+				g2d.drawLine(prev.x, prev.y, centerX, centerY);
+			    }
+			    prev = new Point(centerX, centerY);
 			}
 		}
 
