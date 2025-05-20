@@ -10,7 +10,7 @@ import java.util.Random;
 /**
  * 
  */
-public class CustomArrayList <E> implements Iterable<E>{
+public class MyArrayList <E> implements Iterable<E>{
 	
     private static final int DEFAULT_CAPACITY = 16;
     private static int capacity = DEFAULT_CAPACITY;
@@ -20,7 +20,7 @@ public class CustomArrayList <E> implements Iterable<E>{
     /**
      * Default Constructor
      */
-    public CustomArrayList() {
+    public MyArrayList() {
 	this(capacity);
     }
 
@@ -30,7 +30,7 @@ public class CustomArrayList <E> implements Iterable<E>{
      * @param initialCapacity
      */
     @SuppressWarnings("unchecked")
-    public CustomArrayList(int initialCapacity) {
+    public MyArrayList(int initialCapacity) {
 	capacity = initialCapacity;
 	arrList = (E[]) new Object[capacity];
     }
