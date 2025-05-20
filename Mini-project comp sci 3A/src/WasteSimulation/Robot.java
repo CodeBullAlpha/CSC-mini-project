@@ -9,7 +9,7 @@ import GCN.GCNInferenceHelper;
 import WGraph.Graph;
 
 import DataStructures.HashMap;
-
+import DataStructures.CustomArrayList;
 
 public class Robot {
 	public int row, col;
@@ -415,8 +415,17 @@ public class Robot {
 			return;
 		}
 
-		List<Bin> relevantBins = simulation.bins.stream().filter(bin -> bin.type == carrying.type).toList();
+		List<Bin> relevantBins = new ArrayList<Bin>();
+		
+		Iterator<Bin> binIter = relevantBins.iterator();
 
+		while(binInter.hasNext()) {
+		    Bin current = binIter.next();
+		    if(current.type == carrying.type)
+			relevantBins.add(current);
+		}
+		
+		
 		if (relevantBins.isEmpty()) {
 			nearestBin = null;
 			farthestBin = null;
