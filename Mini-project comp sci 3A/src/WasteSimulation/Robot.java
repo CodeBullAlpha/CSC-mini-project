@@ -9,18 +9,14 @@ import GCN.GCNInferenceHelper;
 import WGraph.Graph;
 
 
-//import java.util.Queue;
-import java.util.Collections;
-//import java.util.LinkedList;
+
+//import java.util.Collections;
 
 import DataStructures.Queues;
 import DataStructures.HashMap;
-import DataStructures.CustomArrayList;
+//import DataStructures.CustomArrayList;
 //import DataStructures.Iterator;
 import DataStructures.LinkedListQueue;
-
-import DataStructures.HashMap;
-
 
 public class Robot {
 	public int row, col;

@@ -5,12 +5,12 @@ package DataStructures;
 
 import java.util.Random;
 //import java.util.Iterator;
-//import java.util.Iterator;
+
 
 /**
  * 
  */
-public class MyArrayList <E> implements Iterable<E>{
+public class CustomArrayList <E> implements Iterable<E>{
 	
     private static final int DEFAULT_CAPACITY = 16;
     private static int capacity = DEFAULT_CAPACITY;
@@ -20,7 +20,7 @@ public class MyArrayList <E> implements Iterable<E>{
     /**
      * Default Constructor
      */
-    public MyArrayList() {
+    public CustomArrayList() {
 	this(capacity);
     }
 
@@ -29,11 +29,11 @@ public class MyArrayList <E> implements Iterable<E>{
      * Parameterized constructor
      * @param initialCapacity
      */
-    @SuppressWarnings("unchecked")
-    public MyArrayList(int initialCapacity) {
-	capacity = initialCapacity;
-	arrList = (E[]) new Object[capacity];
-    }
+    @SuppressWarnings("unchecked")    
+    public CustomArrayList(int initialCapacity) {
+		capacity = initialCapacity;
+    	arrList = (E[]) new Object[capacity];
+	}
 
     /**
      * @return the current number of elements in the arraylist

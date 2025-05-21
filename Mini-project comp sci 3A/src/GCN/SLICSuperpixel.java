@@ -7,7 +7,7 @@ import java.util.Arrays;
 import java.util.List;
 
 public class SLICSuperpixel {
-	 @SuppressWarnings("unchecked")
+	 
 	public static int[][] generateSuperpixels(BufferedImage img, int numSuperpixels, double compactness) {
 	        int width = img.getWidth();
 	        int height = img.getHeight();
@@ -75,7 +75,7 @@ public class SLICSuperpixel {
 	                    newCenters[i].y /= counts[i];
 	                }
 	            }
-	            centers = (ArrayList<ClusterCenter>) Arrays.asList(newCenters);
+	            //centers = (ArrayList<ClusterCenter>) Arrays.asList(newCenters);
 	        }
 	        return labels;
 	    }
